@@ -14,6 +14,9 @@ class MyFavoriteBooks extends React.Component {
       books: [],
       loading: true,
       show: false,
+      update: false,
+      id: 0,
+      chosen: 0,
     };
   }
   componentDidMount() {
@@ -30,7 +33,7 @@ class MyFavoriteBooks extends React.Component {
           baseURL: process.env.REACT_APP_SERVER_URL,
           url: "/book",
         };
-
+        console.log(config.headers);
         // @ts-ignore
         axios(config)
           .then((axiosResults) => {
@@ -138,6 +141,50 @@ class MyFavoriteBooks extends React.Component {
         });
       });
   };
+
+  handleUpdate = (e) => {
+    e.preventDefault();
+
+    let bookData = {
+      email: e.target.email.value || this.props.auth0.user.email,
+      title: e.target.title.value,
+      status: e.target.status.value,
+      desc: e.target.desc.value,
+    };
+    this.props.auth0
+      .getIdTokenClaims()
+      .then((result) => {
+        const jwt = result.__raw;
+        const config = {
+          headers: { Authorization: `Bearer ${jwt}` },
+          method: "put",
+          baseURL: process.env.REACT_APP_SERVER_URL,
+          url: `/book/${this.state.id}`,
+          data: bookData,
+        };
+
+        // @ts-ignore
+        axios(config)
+          .then((axiosResults) => {
+            this.setState({
+              books: axiosResults.data,
+              loading: true,
+            });
+          })
+          .catch((err) => console.error(err))
+          .then(() => {
+            this.setState({
+              loading: false,
+            });
+          });
+      })
+      .catch((err) => console.error(err))
+      .then(() => {
+        this.setState({
+          loading: false,
+        });
+      });
+  };
   render() {
     // console.log(this.state.books);
     return (
@@ -147,6 +194,7 @@ class MyFavoriteBooks extends React.Component {
           onClick={() => {
             this.setState({
               show: true,
+              update: false,
             });
           }}
         >
@@ -156,6 +204,9 @@ class MyFavoriteBooks extends React.Component {
           show={this.state.show}
           handleClose={this.handleClose}
           handleAddition={this.handleAddition}
+          handleUpdate={this.handleUpdate}
+          update={this.state.update}
+          chosen={this.state.chosen}
         />
         <h1>My Favorite Books</h1>
         <p>This is a collection of my favorite books</p>
@@ -185,6 +236,23 @@ class MyFavoriteBooks extends React.Component {
                           id={item._id}
                         >
                           Delete
+                        </Button>
+                        <Button
+                          variant="primary"
+                          onClick={(e) => {
+                            // console.log(e.target.id);
+                            this.setState({
+                              update: true,
+                              show: true,
+                              id: item._id,
+                              chosen: this.state.books.filter(
+                                (item) => item._id === e.target.id
+                              ),
+                            });
+                          }}
+                          id={item._id}
+                        >
+                          Update
                         </Button>
                       </Carousel.Caption>
                     </Carousel.Item>

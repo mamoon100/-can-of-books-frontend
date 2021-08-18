@@ -3,12 +3,21 @@ import { Modal, Button, Form } from "react-bootstrap";
 import { withAuth0 } from "@auth0/auth0-react";
 class BookFormModal extends Component {
   render() {
+    console.log(this.props.chosen);
     return (
       <Modal show={this.props.show} onHide={this.props.handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Add Your Book</Modal.Title>
+          <Modal.Title>
+            {this.props.update ? "Update Your Book" : "Add Your Book"}
+          </Modal.Title>
         </Modal.Header>
-        <Form onSubmit={this.props.handleAddition}>
+        <Form
+          onSubmit={
+            this.props.update
+              ? this.props.handleUpdate
+              : this.props.handleAddition
+          }
+        >
           <Modal.Body>
             <Form.Group className="mb-3">
               <Form.Label>
@@ -18,6 +27,9 @@ class BookFormModal extends Component {
                 type="email"
                 placeholder={this.props.auth0.user.email}
                 id="email"
+                defaultValue={
+                  this.props.update ? this.props.chosen[0].email : ""
+                }
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -26,6 +38,9 @@ class BookFormModal extends Component {
                 type="text"
                 placeholder="Lord of the Ring"
                 id="title"
+                defaultValue={
+                  this.props.update ? this.props.chosen[0].title : ""
+                }
                 required
               />
             </Form.Group>
@@ -35,13 +50,23 @@ class BookFormModal extends Component {
                 type="text"
                 placeholder="In Stock"
                 id="status"
+                defaultValue={
+                  this.props.update ? this.props.chosen[0].status : ""
+                }
                 required
               />
             </Form.Group>
 
             <Form.Group className="mb-3">
               <Form.Label>Book Description</Form.Label>
-              <Form.Control as="textarea" rows={3} id="desc" />
+              <Form.Control
+                as="textarea"
+                rows={3}
+                id="desc"
+                defaultValue={
+                  this.props.update ? this.props.chosen[0].desc : ""
+                }
+              />
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>
